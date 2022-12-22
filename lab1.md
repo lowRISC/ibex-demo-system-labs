@@ -120,7 +120,7 @@ cd util
 cd ..
 ```
 
-In a separate terminal window, we can connect GDB to it now:
+In a separate terminal window, you can connect GDB to the OpenOCD server:
 ```bash
 riscv32-unknown-elf-gdb ./sw/build/demo/demo
 ```
@@ -132,12 +132,12 @@ Inside GDB type the following command:
 
 Some useful GDB commands:
 - `step`: steps to the next instruction.
-- `advance main`: keep running until the start of main (you can replace main with another function name as well).
+- `advance main`: keep running until the start of the main function (you can replace main with another function).
 - `set {int}0xhex_addr = 0xhex_val`: write `hex_val` to the memory address `hex_addr`.
 - `x/w 0xhex_addr`: read a word (32 bits) from `hex_addr` and display it in hexidecimal.
 - `info locals`: shows you the values of the local variables for the current function.
 - `backtrace`: shows you the call stack.
 - `help`: to find commands you may not yet know.
 
-## Exercise 3
+### Exercise 3
 Write to the green LEDs using GDB. Look in `sw/common/demo_system.h` for the value of `GPIO_BASE`. Use the set command above to write `0xa` to this base address. This should change the green LEDs to be on, off, on and off.

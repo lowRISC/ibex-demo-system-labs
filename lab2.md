@@ -136,6 +136,7 @@ We recommend doing this in two steps:
 1. Implement the address decoder for accessing the shift register (you can get inspiration from the existing address decoder code).
 2. Implement the shift register functionality in the sequential block that sets the value of `gp_o`.
    This needs to be conditional on the address decoding implemented in the first step and use the data written by Ibex (`device_wdata_i`) as well as the current value of the GPIO output (`gp_o`).
+<!-- sample solution: last commit on the [`sample-solution/lab2` branch](https://github.com/lowRISC/ibex-demo-system/commits/sample-solution/lab2) branch -->
 
 When you are done, rebuild the Verilator simulation executable.
 

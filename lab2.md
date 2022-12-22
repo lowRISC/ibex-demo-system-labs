@@ -99,7 +99,10 @@ What is the first address that Ibex accesses after reset?
 Is this access a read or a write?
 <!-- write of 0 to 32'h0010_0730 -->
 
-Which instruction is executed when this memory access happens, and what does the basic block containing the instruction do?
+Which instruction is executed when this memory access happens?
+(Hint: Obtain the instruction address from `current_pc` and search for that address in the disassembled binary.)
+What does the basic block containing the instruction do?
+(Hint: A basic block is a sequence of instructions with no branches in (except to the entry) or out (except at the exit).)
 <!-- A store of 0 to the address in a register; the basic block is a loop that fills a memory region with zeros. -->
 
 Investigating the system memory map, which is defined by the `localparam`s near the top of `rtl/system/ibex_demo_system.sv`, we can see that the address belongs to the on-chip memory.

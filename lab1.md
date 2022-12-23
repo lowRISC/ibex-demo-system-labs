@@ -1,9 +1,12 @@
 # Lab 1: Programming your FPGA and interacting with the demo system
 
 Welcome to the first lab on using the [Ibex demo system](https://github.com/lowRISC/ibex-demo-system). In this lab, we will:
+- Set up your development environment.
 - Learn how to build the software.
+- Build an FPGA bitstream. 
 - Program our board with a bitstream.
 - Run the software on the board.
+- Read from the UART.
 - Interact with the Ibex using GDB.
 
 ## Setting up your containter
@@ -105,10 +108,10 @@ screen /dev/ttyUSB1 115200
 If you see an immediate `[screen is terminating]`, it may mean that you need super user rights. In this case, you may try adding `sudo` before the `screen` command. To exit from the `screen` command, you should press control and a together, then release these two keys and press d.
 
 ### Exercise 1
-While the demo application is running try toggling the switches and buttons, you should see the input value changing.
+While the demo application is running try toggling the switches and buttons, you should see changes in the input value that is displayed by `screen`.
 
 ### Exercise 2
-Adjust the demo system application to print "Hello Ibex" instead of "Hello World". You should adjust the content of the file in `sw/demo/main.c`. You should rebuild the software, but do not need to rebuild the bitstream. Once you've built your updated software you should load the software onto the board to see the result.
+Adjust the demo system application to print "Hello Ibex" instead of "Hello World". You should adjust the content of the file in `sw/demo/main.c`. Afterwards, you should rebuild the software, but do not need to rebuild the bitstream. Once you've built your updated software, you can load the software onto the board to see the result.
 
 ## Debugging using GDB
 We can use OpenOCD to connect to the JTAG on the FPGA. We can then use GDB to connect to OpenOCD and interact with the board as we would when we debug any other application.

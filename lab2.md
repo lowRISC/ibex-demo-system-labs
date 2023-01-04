@@ -6,7 +6,7 @@ In this second lab, you will learn how to modify a hardware peripheral and how t
 
 ## Simulating with Verilator
 
-[Verilator](verilator.org) is a widely-used simulator for Verilog and SystemVerilog.
+[Verilator](https://verilator.org) is a widely-used simulator for Verilog and SystemVerilog.
 It compiles RTL code to a multithreaded C++ executable, which makes Verilator much faster than other simulators in many cases.
 Verilator is free software (licensed LGPLv3).
 If you have not installed Verilator yet, please [install it now](https://verilator.org/guide/latest/install.html).

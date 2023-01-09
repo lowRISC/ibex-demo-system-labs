@@ -1,0 +1,22 @@
+name: Generate PDF
+
+on: push
+
+jobs:
+  convert_via_pandoc:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: create file list
+        id: files_list
+        run: |
+          mkdir output  # create output dir
+          # this will also include README.md
+          echo "::set-output name=files::$(printf '"%s" ' lab*.md)"
+      - uses: docker://pandoc/latex:2.9
+        with:
+          args: --output=output/result.pdf ${{ steps.files_list.outputs.files }} -f markdown+hard_line_breaks
+      - uses: actions/upload-artifact@master
+        with:
+          name: output
+          path: output

@@ -63,14 +63,16 @@ cd ../..
 For openFPGALoader to be able to access the FPGA through the USB, we must follow the following commands:
 ```bash
 sudo cp openFPGALoader/99-openfpgaloader.rules /etc/udev/rules.d/
-sudo udevadm control --reload-rules && sudo udevadm trigger # force udev to take new rule
-sudo usermod -a $USER -G plugdev # add user to plugdev group
+# Force udev to take new rule.
+sudo udevadm control --reload-rules && sudo udevadm trigger
+# Add user to plugdev group.
+sudo usermod -a $USER -G plugdev
 
 ```
 
 Then we program the FPGA with the following command:
 ```bash
-openFPGALoader/build/openFPGALoader -b arty_a7_35t <path>/<to>/lowirsc_ibex_demo_system.bit
+openFPGALoader/build/openFPGALoader -b arty_a7_35t <path-to>/lowirsc_ibex_demo_system.bit
 ```
 
 ## Loading the software

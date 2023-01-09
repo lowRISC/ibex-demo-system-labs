@@ -41,7 +41,7 @@ make
 cd ../..
 ```
 
-This builds the software that we can later use as memory content for the Ibex running in the demo system. For example, the binary for the demo application is located at `sw/build/demo/demo`.
+This builds the software that we can later use as memory content for the Ibex running in the demo system. For example, the binary for the demo application is located at `sw/build/demo/hello_world/demo`.
 
 ## Building the FPGA bitstream
 **TODO**
@@ -94,7 +94,7 @@ You must repeat the export path step if you open a new terminal window.
 Then you can load and run the program as follows:
 ```bash
 cd util
-./load_demo_system.sh run ./sw/build/demo/demo
+./load_demo_system.sh run ./sw/build/demo/hello_world/demo
 cd ..
 ```
 
@@ -111,7 +111,7 @@ If you see an immediate `[screen is terminating]`, it may mean that you need sup
 While the demo application is running try toggling the switches and buttons, you should see changes in the input value that is displayed by `screen`.
 
 ### Exercise 2
-Adjust the demo system application to print "Hello Ibex" instead of "Hello World". You should adjust the content of the file in `sw/demo/main.c`. Afterwards, you should rebuild the software, but do not need to rebuild the bitstream. Once you've built your updated software, you can load the software onto the board to see the result.
+Adjust the demo system application to print "Hello Ibex" instead of "Hello World". You should adjust the content of the file in `sw/demo/hello_world/main.c`. Afterwards, you should rebuild the software, but do not need to rebuild the bitstream. Once you've built your updated software, you can load the software onto the board to see the result.
 
 ## Debugging using GDB
 We can use OpenOCD to connect to the JTAG on the FPGA. We can then use GDB to connect to OpenOCD and interact with the board as we would when we debug any other application.
@@ -119,13 +119,13 @@ We can use OpenOCD to connect to the JTAG on the FPGA. We can then use GDB to co
 First, let's load the software in the halted state:
 ```bash
 cd util
-./load_demo_system.sh halt ./sw/build/demo/demo
+./load_demo_system.sh halt ./sw/build/demo/hello_world/demo
 cd ..
 ```
 
 In a separate terminal window, you can connect GDB to the OpenOCD server:
 ```bash
-riscv32-unknown-elf-gdb ./sw/build/demo/demo
+riscv32-unknown-elf-gdb ./sw/build/demo/hello_world/demo
 ```
 
 Inside GDB type the following command:

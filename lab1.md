@@ -43,8 +43,10 @@ cd ../..
 
 This builds the software that we can later use as memory content for the Ibex running in the demo system. For example, the binary for the demo application is located at `sw/build/demo/hello_world/demo`.
 
-## Building the FPGA bitstream
-**TODO**
+## Getting the FPGA bitstream
+Download the [FPGA bitstream from GitHub](https://github.com/lowRISC/ibex-demo-system/releases/download/v0.0.1/lowrisc_ibex_demo_system_0.bit).
+
+Alternatively, you can build your own bitstream if you have access to Vivado by following the instructions in [the README](https://github.com/lowRISC/ibex-demo-system/blob/main/README.md).
 
 ## Programming the FPGA
 First let us build and install the openFPGALoader (instructions taken from [the official guide](https://trabucayre.github.io/openFPGALoader/guide/install.html)):

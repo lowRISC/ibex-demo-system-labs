@@ -17,7 +17,8 @@ fusesoc --cores-root=. run --target=sim --tool=verilator \
         --setup --build lowrisc:ibex:demo_system
 ```
 
-This will create an executable at `./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system`.
+This will create an executable at
+`./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system`.
 Now start the simulation by invoking that executable with two flags: the first flag enables the capturing of wave traces, and the second flag loads the `demo` binary into program memory
 ```
 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system \

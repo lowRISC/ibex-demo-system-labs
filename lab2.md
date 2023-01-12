@@ -18,7 +18,10 @@ fusesoc --cores-root=. run --target=sim --tool=verilator \
 ```
 
 This will create an executable at
-`./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system`.
+```
+./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system
+```
+
 Now start the simulation by invoking that executable with two flags: the first flag enables the capturing of wave traces, and the second flag loads the `demo` binary into program memory
 ```
 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system \
@@ -39,6 +42,7 @@ Start GTKWave through your desktop's launcher or by entering `gtkwave` in a new 
 Then open the trace file of our simulation by clicking **File** -> **Open New Tab** and selecting `sim.fst` inside the root directory of the Ibex demo repository.
 
 A GTKWave tab has two main parts: the signal search tree (SST) on the left (green rectangle in screenshot below) and the signal wave display on the right (blue rectangle).
+
 ![](./lab2_imgs/gtkwave.png)
 
 Navigate the tree of instances by expanding an instance (clicking the plus symbol left of the instance name) to expose the list of instances inside.
@@ -116,6 +120,7 @@ Select `data_req_o`, `data_gnt_i`, and `data_addr_o` in the signal wave display,
 The window that opens defines matches in two steps: firstly defining the conditions for individual signals, and secondly defining the relation of those conditions.
 We are interested in the case when `data_req_o` and `data_gnt_i` are high and `data_addr_o` has a hexadecimal value of `80000000`.
 To this end, make the following settings:
+
 ![](./lab2_imgs/pattern_search.png)
 
 Click the **Fwd** button to advance the cursor to Ibex's first access of the GPIO.

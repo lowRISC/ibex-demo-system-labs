@@ -72,7 +72,7 @@ sudo usermod -a $USER -G plugdev
 
 Then we program the FPGA with the following command:
 ```bash
-openFPGALoader/build/openFPGALoader -b arty_a7_35t <path-to>/lowirsc_ibex_demo_system.bit
+openFPGALoader/build/openFPGALoader -b arty_a7_35t <path-to>/lowrisc_ibex_demo_system.bit
 ```
 
 ## Loading the software

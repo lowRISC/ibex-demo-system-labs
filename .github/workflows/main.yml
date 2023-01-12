@@ -17,7 +17,7 @@ jobs:
           echo "::set-output name=files::$(printf '"%s" ' lab*.md)"
       - uses: docker://pandoc/latex:2.9
         with:
-          args: --output=output/result.pdf ${{ steps.files_list.outputs.files }} -f markdown+hard_line_breaks
+          args: --output=output/result.pdf ${{ steps.files_list.outputs.files }} -f markdown
       - uses: actions/upload-artifact@master
         with:
           name: output

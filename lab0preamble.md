@@ -4,4 +4,4 @@ In this tutorial, lowRISC engineers will introduce participants to working with 
 
 The SoC has been intentionally kept simple, so people new to hardware development and/or SoC design can quickly adapt it to their needs. The labs will use the affordable (160$) Digilent Arty A7 FPGA board. A ‘simulation first’ approach is taken (using the open source Verilator simulator) to get RTL designed and working before FPGA synthesis (which is done with Xilinx Vivado). This gives a quicker, less frustrating, develop/build/debug loop.
 
-Ibex development is funded by the OpenTitan project.
+[lowRISC](https://lowrisc.org/) is a not-for-profit company with a full stack engineering team based in Cambridge, UK. We use collaborative engineering to develop and maintain open source silicon designs and tools. Ibex development is funded by the OpenTitan project.

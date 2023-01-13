@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
+      - name: constrain width of some images for pandoc
+        run: sed -i '/pattern_search\.png/ s/$/{width=200}/' lab2.md
       - name: create file list
         id: files_list
         run: |

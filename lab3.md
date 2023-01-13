@@ -81,6 +81,7 @@ void reset_mcycle(void);
 ```
 
 Let's use these functions to count the number of cycles Ibex spends for calculations in the `fractal_mandelbrot` function:
+
 1. Add `#include "demo_system.h"` near the top of `sw/demo/lcd_st7735/fractal.c`.
 2. Append an argument `unsigned int *compute_cycles` to the `fractal_mandelbrot` function signature in `fractal.c` and `fractal.h`.
 3. Initialize the cycle count to zero so it can be used for summing up; i.e., add `*compute_cycles = 0;` to the top of the body of `fractal_mandelbrot`.

@@ -70,13 +70,13 @@ All three have one destination register, multiply and add have two source regist
 We won't be getting into full encoding details in this lab (please consult the RISC-V ISA manual volume 1 if you want more details), just the ones we need.
 The bottom 7 bits of a RISC-V instruction specify the 'major opcode':
 
-MAJOR OPCODE INSTRUCTION LAYOUT DIAGRAM
+![](./lab4_imgs/RISC-V_base_opcode_map.png)
 
 RISC-V reserves some major opcodes for custom instructions, we're going to use the 'custom-0' opcode, let's call it OPCODE_CMPLX, it has a value of `7'h0b`
 
 All 3 of our instructions will 'R-type' instructions, which have the following layout
 
-R-TYPE layout diagram
+![](./lab4_imgs/R-type_instruction_encoding.png)
 
 The R-type instructions provide two source registers and one destination register.
 We'll use the 'funct3' field to select which of our operations to execute.

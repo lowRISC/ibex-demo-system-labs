@@ -9,47 +9,112 @@ Welcome to the first lab on using the [Ibex demo system](https://github.com/lowR
 - Read from the UART.
 - Interact with the Ibex using GDB.
 
-## Setting up your containter
-**TODO**
-
 ## Getting started
-To start please clone the repository using the following terminal commands:
+To start please decompress the zip file on the USB or clone the repository using the following terminal commands:
 ```bash
 git clone https://github.com/lowRISC/ibex-demo-system
 cd ibex-demo-system
 ```
 
-Now set up the Python virtual environment in your terminal:
-```bash
-# Setup python venv
-python3 -m venv .
-source ./bin/activate
+Now, let us set up our container. First install docker (or you can use pacman if you are already familiar with it.
+On the USB go to the "Docker Installers" directory and follow the instructions based on your operating system.
 
-# Install python requirements
-pip3 install -r python-requirements.txt
+### Windows
+Check that you have virtualization enabled in task manager under performance and CPU. If not, you need to enable virtualization in your BIOS settings.
+Make sure "Windows Subsystem for Linux" and "Virtual Machine Platform" are enabled in "Turn Windows features on or off"
+Double click wsl_update_x86.msi and install.
+Open powershell and run: wsl --set-default-version 2
+Double click "Docker Desktop Installer Windows.exe"
+When prompted select WSL 2.
+If your admin account is different to your user account, you must add the user to the docker-users group. Run Computer Management as an administrator and navigate to Local Users and Groups > Groups > docker-users. Right-click to add the user to the group. Log out and log back in for the changes to take effect.
+
+### Mac
+Double click DockerMacIntel.dmg or DockerMackArm.dmg depending on your CPU and drag the Docker icon to the Applications folder.
+Double click Docker.app in the Applications folder.
+Accept the terms.
+
+### Ubuntu
+Make sure you have gnome-terminal installed
+$ sudo apt-get install ./docker-desktop-4.16.0-ubuntu-amd64.deb
+$ systemctl --user enable docker-desktop
+
+### Debian
+Make sure you have gnome-terminal installed
+$ sudo apt-get install ./docker-desktop-4.16.0-debian-amd64.deb
+$ systemctl --user enable docker-desktop
+
+### Fedora
+Make sure you have gnome-terminal installed
+$ sudo dnf install ./docker-desktop-4.16.0-fedora-x86_64.rpm
+$ systemctl --user start docker-desktop
+
+### Set up container (Linux/Mac)
+There is a prebuilt container of tools available you may want to use to get started quickly.
+There are instructions for building the container for either Docker/Podman located in ./container/README.md.
+
+A container image may be provided to you on a USB stick. You can load the containerfile by running :
+```bash
+sudo docker load < ibex_demo_image.tar
+# OR
+podman load < ibex_demo_image.tar
 ```
 
-You may need to repeat the PIP command if you get any errors mentioning `Failed to build wheel`.
+If you already have a container file, you can start the container by running :
+```bash
+sudo docker run -it --rm \
+  -p 6080:6080 \
+  -p 3333:3333 \
+  -v $(pwd):/home/dev/demo:Z \
+  ibex
+```
+OR
+```bash
+podman unshare chown 1000:1000 -R .
+podman run -it --rm \
+  -p 6080:6080 \
+  -p 3333:3333 \
+  -v $(pwd):/home/dev/demo:Z \
+  ibex
+podman unshare chown 0:0 -R .
+```
+To access the container once running, go to [http://localhost:6080/vnc.html](http://localhost:6080/vnc.html).
+
+### Set up container (Windows)
+Run a command prompt in administrator mode and type:
+```
+cd "C:\Program Files\Docker\Docker"
+.\DockerCli.exe -SwitchLinuxEngine
+```
+
+Go to the folder on the USB named "Docker Images" and run:
+```
+docker laod -i ibex_demo_image.tar
+```
+
+Go to the folder where you have decompressed the demo system repository:
+```
+docker run -it --rm -p 6080:6080 -p 3333:3333 -v %cd%:/home/dev/demo:Z ibex
+```
 
 ## Building software
 To build the software use the following commands in your terminal:
 ```bash
-mkdir sw/build
-cd sw/build
+mkdir -p sw/build
+pushd sw/build
 cmake ..
 make
-cd ../..
+popd ../..
 ```
 
 This builds the software that we can later use as memory content for the Ibex running in the demo system. For example, the binary for the demo application is located at `sw/build/demo/hello_world/demo`.
 
 ## Getting the FPGA bitstream
-Download the [FPGA bitstream from GitHub](https://github.com/lowRISC/ibex-demo-system/releases/download/v0.0.1/lowrisc_ibex_demo_system_0.bit).
+Get the FPGA bitstream off of the USB or download the [FPGA bitstream from GitHub](https://github.com/lowRISC/ibex-demo-system/releases/download/v0.0.2/lowrisc_ibex_demo_system_0.bit).
 
 Alternatively, you can build your own bitstream if you have access to Vivado by following the instructions in [the README](https://github.com/lowRISC/ibex-demo-system/blob/main/README.md).
 
 ## Programming the FPGA
-First let us build and install the openFPGALoader (instructions taken from [the official guide](https://trabucayre.github.io/openFPGALoader/guide/install.html)):
+First get the openFPGA executable off of the USB or build it from scratch using the instructions taken from [the official guide](https://trabucayre.github.io/openFPGALoader/guide/install.html):
 ```bash
 git clone https://github.com/trabucayre/openFPGALoader.git
 cd openFPGALoader
@@ -83,7 +148,7 @@ openocd --version
 ```
 Please also check that you have version 0.11.0 or above.
 
-If not, you can build your own OpenOCD:
+If not, you can get the correct version off of the USB stick or build your own OpenOCD:
 ```bash
 git clone https://github.com/openocd-org/openocd.git
 cd openocd

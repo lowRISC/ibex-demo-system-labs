@@ -88,7 +88,7 @@ cd "C:\Program Files\Docker\Docker"
 
 Go to the folder on the USB named "Docker Images" and run:
 ```
-docker laod -i ibex_demo_image.tar
+docker load -i ibex_demo_image.tar
 ```
 
 Go to the folder where you have decompressed the demo system repository:

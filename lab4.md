@@ -68,59 +68,63 @@ All three have one destination register, multiply and add have two source regist
 ### RISC-V instruction encoding
 
 We won't be getting into full encoding details in this lab (please consult the RISC-V ISA manual volume 1 if you want more details), just the ones we need.
-The bottom 7 bits of a RISC-V instruction specify the 'major opcode':
+The bottom 7 bits of a RISC-V instruction specify the 'major opcode' (in this table, the bottom two bits are fixed to `2'b11`):
 
 ![](./lab4_imgs/RISC-V_base_opcode_map.png)
 
-RISC-V reserves some major opcodes for custom instructions, we're going to use the 'custom-0' opcode, let's call it OPCODE_CMPLX, it has a value of `7'h0b`
+RISC-V reserves some major opcodes for custom instructions, we're going to use the *custom-0* opcode, which has a value of `7'b0001011 = 7'h0b`.
+Let's call it `OPCODE_CMPLX`.
 
-All 3 of our instructions will 'R-type' instructions, which have the following layout
+All of our instructions will be *R-type* instructions, which have the following layout:
 
 ![](./lab4_imgs/R-type_instruction_encoding.png)
 
 The R-type instructions provide two source registers and one destination register.
-We'll use the 'funct3' field to select which of our operations to execute.
- - 3'b000 - Complex Multiply
- - 3'b001 - Complex Add
- - 3'b010 - Complex Absolute Value (Squared)
-'funct7' will be set to 0 in all cases.
-For the absolute value operation the rs2 source register will always be x0 (and ignored by the instruction).
+We'll use the *funct3* field to select which of our operations to execute:
+
+- `3'b000` - Complex Multiply
+- `3'b001` - Complex Add
+- `3'b010` - Complex Absolute Value (Squared)
+
+*funct7* will be set to 0 in all cases.
+For the absolute value operation, the *rs2* source register will always be `x0` (and ignored by the instruction).
 
 ## Adding custom instructions to Ibex
 
 In a sense Ibex has no direct custom instruction support, however one can easily alter the RTL to add some.
 There are three files in which we need to make modifications.
 
-- ibex_pkg.sv - Ibex constants and definitions
-- ibex_decoder.sv - The Ibex decoder
-- ibex_alu.sv - The alue
+- `ibex_pkg.sv`: Constants and definitions
+- `ibex_decoder.sv`: Instruction decoder
+- `ibex_alu.sv`: Arithmetic-logical unit (ALU)
 
-### Modifying ibex_pkg.sv
+### Modifying `ibex_pkg.sv`
 
-Open up `vendor/lowrisc_ibex/rtl/ibex_pkg.sv` and take a look and make the following changes:
+Open `vendor/lowrisc_ibex/rtl/ibex_pkg.sv`, take a look, and make the following changes:
 
-1. Add our new opcode (OPCODE_CMPLX == `7'h0b`) to the opcode enum `opcode_e`.
+1. Add our new opcode (`OPCODE_CMPLX = 7'h0b`) to the opcode enum `opcode_e`.
 2. Add three new operations, one for each new instruction, to the ALU operations enum `alu_op_e`.
    This is what is produced by the decoder to tell the ALU what to do.
    Name them whatever you think is best.
 
-### Modifying ibex_decoder.sv
+### Modifying `ibex_decoder.sv`
 
-Open up `vendor/lowrisc_ibex/rtl/ibex_decoder.sv` and take a look.
-The first thing to note is the decoder is split into two, one part specifies things like register read and write enables the other part specifies ALU related signals.
+Open `vendor/lowrisc_ibex/rtl/ibex_decoder.sv` and take a look.
+The first thing to note is the decoder is split into two, one part specifies things like register read and write enables, and the other part specifies ALU related signals.
 The reason for this split is timing, the decoder has two copies of the instruction in seperate flops.
 With a single set of flops the 'fan-out' of those flops is very large, requiring significant buffering, slowing the logic down.
-With the duplicate flops and split decoder fan-out is reduced improving performance.
-Tools can do this kind of duplication automatically but it may not be enabled in all flows (in particular in ASIC synthesis) and may choose a split that doesn't work as well.
+With the duplicate flops and split, the decoder fan-out is reduced, which improves performance.
+Tools can do this kind of duplication automatically, but it may not be enabled in all flows (in particular in ASIC synthesis), and tools may choose a split that doesn't work as well.
 
-Handling for 'OPCODE_CMPLX' needs to be added to both decoders:
+Handling for `OPCODE_CMPLX` needs to be added to both decoders:
 
-1. The first decoder begins `unique case (opcode)`. For `OPCODE_CMPLX` we must set the following signals:
-  - `rf_ren_a_o`/`rf_ren_b_o` - Register file read enables
-  - `rf_we` - Register file write enable
-  - `illegal_insn` set 1 if the instruction is illegal (e.g. funct3 isn't one of the 3 values we are using)
-2. The second decoder controls the ALU operation and begins `unique case (opcode_alu)` we must set the following signals:
-  - `alu_op_a_mux_sel_o` - Mux select for ALU operand A, always set to `OP_A_REG_A` as we always read our operands from registers for our new instructions.
-  - `alu_op_b_mux_sel_o` - Mux select for ALU operand A, always set to `OP_B_REG_B` as we always read our operands from registers for our new instructions.
-  - `alu_operation_o` - The ALU operation, set it to one of the new values you created in `ibex_pkg.sv` depending upon the `funct3` field of the instruction.
-
+1. The first decoder begins with `unique case (opcode)`.
+   For `OPCODE_CMPLX` we must set the following signals:
+  - `rf_ren_a_o`/`rf_ren_b_o`: Register file read enables
+  - `rf_we`: Register file write enable
+  - `illegal_insn`: set 1 if the instruction is illegal (e.g. *funct3* isn't one of the 3 values we are using)
+2. The second decoder controls the ALU operation and begins with `unique case (opcode_alu)`.
+   We must set the following signals:
+  - `alu_op_a_mux_sel_o`: Mux select for ALU operand A, always set to `OP_A_REG_A` as we always read our operands from registers for our new instructions.
+  - `alu_op_b_mux_sel_o`: Mux select for ALU operand B, always set to `OP_B_REG_B` as we always read our operands from registers for our new instructions.
+  - `alu_operation_o`: The ALU operation, set it to one of the new values you created in `ibex_pkg.sv` depending upon the *funct3* field of the instruction.

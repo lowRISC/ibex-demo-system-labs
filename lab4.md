@@ -1,60 +1,58 @@
 # Lab 4: Adding Custom Instructions to Ibex
 
-In Lab 3 we saw the difference in performance between the fixed and floating point mandelbrot implementations, can we get further performance improvements?
-We can use custom RISC-V instructions to give us dedicated hardware to help compute the mandelbrot set.
-This lab covers the process of adding such custom instructions, though before we look at how we add them let's take a quick look at how you calculate a mandelbrot set.
+In Lab 3 we saw the difference in performance between the fixed and floating point Mandelbrot implementations, can we get further performance improvements?
+We can add custom RISC-V instructions to use dedicated hardware for computing the Mandelbrot set.
+This lab covers the process of adding such custom instructions, though before we look at how we add them, let's take a quick look at how you calculate a Mandelbrot set.
 
-## Drawing the Mandelbrot set.
+## Drawing the Mandelbrot set
 
 This is not a mathematics lab, so we're not going into lots of detail here nor does it matter if you don't really understand it, it's just the 'nuts and bolts' of the calculation you need to work with.
-Before we can draw the mandelbrot set, we first need to be able to work with complex numbers.
+Before we can draw the Mandelbrot set, we first need to be able to work with complex numbers.
 
 ### Complex Number Intro
 
-A complex numbers consists of 'real' and 'imaginary' parts and can be written
+A complex number can be written as $a + bi$, where $a$ and $b$ are real numbers and $i = \sqrt{-1}$ is the *imaginary unit*.
+$a$ is called the *real part*, and $b$ is called the *imaginary part*.
 
-(a + bi)
+To add complex numbers, simply sum the real and imaginary parts:
 
-Where 'a' is the real part and 'b' is the imaginary part.
-The 'i' represents sqrt(-1).
+$$(a + bi) + (c + di) = (a + c) + (b + d)i$$
 
-To add complex numbers simply sum the real and imaginary parts:
+To mutiply complex numbers, the components are multiplied by standard algebraic rules:
 
-(a + bi) + (c + di) = ((a + c) + (b + d)i) 
+$$(a + bi) (c + di) = ac + adi + bci + bdi^2 = (ac - bd) + (ad + bc)i$$
 
-To mutiply complex numbers the components are multiplied by standard algebraic rules:
+Noting that $i^2 = -1$.
 
-(a + bi) * (c + di) = ac + adi + bci + bdi^2 = (ac - bd) + (ad + bc)i
+Finally, the absolute value $|C|$ of a complex number $C = a + bi$ is defined as:
 
-Noting that i^2 = -1
+$$|C|^2 = a^2 + b^2$$
 
-The final operation we need is absolute value.
-The absolute value |C| of a complex number C = (a + bi) is defined as:
+Noting we would need a square root to get the absolute value, but for our purposes the squared value is fine.
 
-|C| ^ 2 = a^2 + b^2
+### Mandelbrot Set Calculation
 
-Noting we need a square root to get the absolute value but for our purposes the squared value is fine
+The Mandelbrot set is a set of complex numbers.
+A number $C$ is in the set if the recurrance below never diverges to infinity (i.e., $|Z_n|$ is a finite number for all $n$).
 
-### Mandlelbrot Set Calculation
+$$Z_0 = C$$
 
-The Mandlerbrot set is a set of complex numbers.
-A number 'C' is in the set if the recurrance below never diverges to infinity (i.e. for all 'n' |Z_n| is some finite number)
+$$Z_{n+1} = Z_n^2 + C$$
 
-Z_0 = C
-Z_(n+1) = Z_n^2 + C
+It can be shown that if $|Z_n| > 2$ for any $n$, then the recurrence will diverge and hence $C$ is not part of the Mandelbrot set.
 
-It can be shown that if |Z_n| > 2 for any 'n' then the recurrance will diverge and hence 'C' is not part of the mandelbrot set.
+To draw the set, we map pixels to real and imaginary numbers and calculate a certain number of iterations of the $Z_n$ recurrence for each point to decide if the point is in the set:
 
-To draw the set we map pixels to real and imaginary numbers and calculate a certain number of iterations of the 'Z_n' recurrence for each point.
-If '|Z_n|' <= 2 (noting we can just test the square result against 4 to avoid a square root) for all iterations we declare the point in the set.
-If '|Z_n|' > 2 for any iteration we terminate the iterations there and declare the point not in the set.
-We can colour the result based upon the number of iterations we reached before making our decision.
+- If $|Z_n| \leq 2$ (noting we can just test the square result against 4 to avoid a square root) for all iterations, we declare the point *in* the set.
+- If $|Z_n| > 2$ for any iteration, we terminate the iterations there and declare the point *not* in the set.
+
+We finally colour the result based upon the number of iterations we reached before making our decision.
 
 ## Complex number custom instructions
 
-Note: These are toy instructions for demonstration use, a 'real' complex number extension may do things differently, in particular the clamping and truncation behaviour discussed below. 
+Note: These are toy instructions for demonstration use, a 'real' complex number extension may do things differently, in particular the clamping and truncation behaviour discussed below.
 
-Our fixed point implementation of the mandelbrot set renderer uses 16-bit numbers (12 fractional bits, 4 integer bits with 2s complement representation).
+Our fixed point implementation of the Mandelbrot set renderer uses 16-bit numbers (12 fractional bits, 4 integer bits with 2s complement representation).
 This means we can pack a complex number into a single 32-bit number.
 So how about some custom instructions that implement complex number operations on the packed 32 bit representation?
 

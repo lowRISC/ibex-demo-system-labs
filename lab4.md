@@ -54,6 +54,7 @@ Note: These are toy instructions for demonstration use, a 'real' complex number 
 
 Our fixed point implementation of the Mandelbrot set renderer uses 16-bit numbers (12 fractional bits, 4 integer bits with 2s complement representation).
 This means we can pack a complex number into a single 32-bit number.
+The imaginary part will be placed in the lower bits 15:0 and the real part in upper bits 31:16.
 So how about some custom instructions that implement complex number operations on the packed 32 bit representation?
 
 We are going to want three new instructions:

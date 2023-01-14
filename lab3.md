@@ -73,25 +73,28 @@ The LCD demo program already includes the code for that, simply select **Fractal
 ## Measuring computation cycles and displaying them
 
 While admiring Ibex's work, we wonder how many cycles the actual computations take.
-To get an answer, let's use Ibex's cycle counter.
+The demo includes a floating point implementation and a fixed point implementation.
+Ibex doesn't have hardware floating point support so software emulation is used instead.
+Because of this the fixed point implementation is faster than the floating point.
+To find out how much faster, let's use Ibex's cycle counter.
 For this, `demo_system.h` declares two functions to get the value of the cycle counter and to reset it, respectively:
 ```c
 uint32_t get_mcycle(void);
 void reset_mcycle(void);
 ```
 
-Let's use these functions to count the number of cycles Ibex spends for calculations in the `fractal_mandelbrot` function:
+Let's use these functions to count the number of cycles Ibex spends for calculations in the `fractal_mandelbrot_float` function:
 
-1. Add `#include "demo_system.h"` near the top of `sw/demo/lcd_st7735/fractal.c`.
-2. Append an argument `unsigned int *compute_cycles` to the `fractal_mandelbrot` function signature in `fractal.c` and `fractal.h`.
-3. Initialize the cycle count to zero so it can be used for summing up; i.e., add `*compute_cycles = 0;` to the top of the body of `fractal_mandelbrot`.
+1. Add `#include "demo_system.h"` near the top of `sw/demo/lcd_st7735/fractal_float.c`.
+2. Append an argument `unsigned int *compute_cycles` to the `fractal_mandelbrot_float` function signature in `fractal_float.c` and `fractal.h`.
+3. Initialize the cycle count to zero so it can be used for summing up; i.e., add `*compute_cycles = 0;` to the top of the body of `fractal_mandelbrot_float`.
 4. Find the inner computation loop of the fractal.
    Put `reset_mcycle();` before it and `*compute_cycles += get_mcycle();` after it.
-5. In the `fractal_test` function of `sw/demo/lcd_st7735/main.c`, declare a variable to hold the compute cycle count and pass it as last argument to `fractal_mandelbrot`.
-6. After the call to `fractal_mandelbrot`, print the number of cycles on the LCD:
+5. In the `fractal_test` function of `sw/demo/lcd_st7735/main.c`, declare a variable to hold the compute cycle count and pass it as last argument to `fractal_mandelbrot_float`.
+6. After the call to `fractal_mandelbrot_float`, print the number of cycles on the LCD:
 ```c
 unsigned int compute_cycles;
-fractal_mandelbrot(lcd, true, &compute_cycles);
+fractal_mandelbrot_float(lcd, &compute_cycles);
 char buf[32];
 snprintf(buf, 32, "cycles: %10d", compute_cycles);
 lcd_st7735_puts(lcd, (LCD_Point){.x = 0, .y = 0}, buf);
@@ -101,5 +104,7 @@ timer_delay(5000);
 8. Recompile the program and execute it on the FPGA.
 <!-- Sample solution on the `sample-solution/lab3` branch. -->
 
-How many cycles does it take Ibex to compute the fractal?
+Now do the same for the fixed point implementation (`fractal_mandelbrot_fixed` in `sw/demo/lcd_st7735/fractal_fixed.c`).
+
+How many cycles does it take Ibex to compute the fractal for the floating and fixed point versions?
 <!-- 1,186,511,608 cycles for the inner loop-->

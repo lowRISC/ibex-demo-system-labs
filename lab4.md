@@ -130,49 +130,59 @@ Handling for `OPCODE_CMPLX` needs to be added to both decoders:
   - `alu_op_b_mux_sel_o`: Mux select for ALU operand B, always set to `OP_B_REG_B` as we always read our operands from registers for our new instructions.
   - `alu_operation_o`: The ALU operation, set it to one of the new values you created in `ibex_pkg.sv` depending upon the *funct3* field of the instruction.
 
-### Modifying ibex_alu.sv
+### Modifying `ibex_alu.sv`
 
-Open up `vendor/lowrisc_ibex/rtl/ibex_alu.sv` and take a look.
+Open `vendor/lowrisc_ibex/rtl/ibex_alu.sv` and take a look.
 The ALU takes in two operands (inputs `operand_a_i` and `operand_b_i`) along with an operator (input `operator_i`) to produce a result (output `result_o`).
-There's multiple parts to the ALU as there's various kinds of operations (the bit-manipulation extension adds significant complexity here).
-At the bottom of the file you'll find the output mux, outputting the result from the appropriate part of the ALU based upon the operator.
+There's multiple parts to the ALU as there are various kinds of operations (the bit-manipulation extension adds significant complexity here).
+At the bottom of the file you'll find the result multiplexer (mux), outputting the result from the appropriate part of the ALU based upon the operator.
 
-We need to add new logic to implement our new operations but first let's look at fixed point representation and clamping/truncating behaviour
+We need to add new logic to implement our fixed point operations, but first let's look at fixed point representation and clamping/truncating behaviour.
 
 #### Fixed point representation
 
-In fixed point representation we simply store the number multiplied by some fixed, power-of-two, constant.
-For the representation we're using that multiplier is 4096, so 1.0 would be represented by 4096, 2.0 by 8192 1.5 by 6144.
-Manipulating fixed point numbers is straight forward, for addition and subtraction simply perform the operations as normal ($xF + yF = (x + y)F$, where $F$ is our fixed multiplier 4096).
-For multiplying first perform the multiply then divide by the fixed constant ($xFyF = xyF^2$ so we need a divide by $F$ to get the $xyF$ result we want).
-As the constant is a power-of-two practically the division is just choosing which bits out of your multiplier are fed into the final result.
+In fixed point representation we simply store the number multiplied by some constant, which is a power of two.
+For the representation we're using, that multiplier is 4096, so 1.0 would be represented by 4096, 2.0 by 8192, and 1.5 by 6144.
+
+Manipulating fixed point numbers is straightforward:
+For addition and subtraction simply perform the operations as normal
+
+$$xF + yF = (x + y)F$$
+
+where $F$ is our fixed multiplier 4096.
+For multiplication first multiply then divide by the fixed constant
+
+$$xF yF = xyF^2$$
+
+so we need to divide by $F$ to get the $xyF$ result we want.
+
+As the constant $F$ is a power-of-two, the division in practice is just choosing which bits out of your multiplier are fed into the final result.
 
 #### Clamping/Truncation
 
 We have an issue with multiplication, and to a lesser extent addition.
-Multiplying two 16-bit numbers can give you a 32-bit result (consider 0xffff * 0xfffff).
+Multiplying two 16-bit numbers can give you a 32-bit result (consider `0xffff` multiplied by `0xffff`).
 We're dropping the bottom 12 bits of this to give us our constant divide, but that still leaves us with 20 bits of result and only 16 bits to place it in.
-There's two options:
+There are two options:
 
- * Truncate - Just drop the top bits
- * Clamp - Where the result cannot fit into 16-bits clamp the result to the maximum or minimum value as appropriate.
+ * Truncation: drop the top four bits;
+ * Clamping: clamp the result to the maximum or minimum value as appropriate.
 
-For complex multiply we'll use the truncate option.
-As the multiply is made up of multiple fixed point multiplies individually clamping them may not result in an overal sensible result (i.e. a max or min value to indicate we've gone out of range).
-Truncate will also produce a non-sensical result but it's cheaper to implement and matches what normal multiply operations do (e.g. in C if we do a 32-bit multiply we get a truncated 32-bit result).
-The application needs to ensure any multiplies it does will remain within range (which is the case for our mandelbrot set application).
+For complex multiplication we'll use truncation, for the following two main reasons:
+First, neither truncation nor clamping produce sensible overall results.
+The result of complex multiplication is the sum of multiple real multiplications, so clamping individual multiplications does not necessarily result in a sensible result overall (e.g., they could have different signs and cancel each other out).
+Truncation also produces a non-sensical overall result, but it's cheaper to implement and matches what normal multiplications do (e.g., in C if we do a 32-bit multiplication, we get a truncated 32-bit result).
+Second, we make the application responsible for ensuring that any multiplications remain within range (which is the case for our Mandelbrot set application).
 
-For the complex absolute value we'll use clamp.
-Because the squaring means no negative values we do get sensible clamping behaviour, if one of the multiplies maxes out then we know we'll get a large result back, the other multiply can't produce some large negative that could cancel it out.
-This behaviour is important for our application as we use the absolute value to see how big our result is getting, this is what allows us to keep the multiplies in range.
-However it's possible the absolute value calculation may clamp, provides this gives us a large value it's fine we're above the threshold and we'll cease iterating.
-If we just truncated we may not get a large value and incorrect continue iterating (now potentially doing a multiply operation that goes out of range).
+For the complex absolute value we'll use clamping, again for two main reasons:
+First, squaring means no negative results, so clamping is sensible.
+If one of the multiplications maxes out, we'll get a large result back because the other multiplication can't produce some large negative that could cancel it out.
+Second, our Mandelbrot set application uses the absolute value to break multiplication iterations when exceeding a threshold, thereby keeping multiplications within range.
+This would not be possible if we used truncation in calculating the absolute value.
 
 Addition suffers from the same issue in that an extra bit (representing the carry-out) is added, so our 16-bit adds have 17 bits of result.
-
-For additions needed to implement the multiply and the addition operation itself we'll truncate.
-
-For the absolute value we can just give the full result. We've got 32-bits of result register so no need for either clamping or truncating.
+For complex additions and for the additions to implement the complex multiplication, we'll use truncation, with the same reasoning as for complex multiplication.
+For the addition at the end of the complex absolute value, we use the full 17-bit value of the sum and sign-extend it to 32 bits.
 
 #### Implementing the complex operations
 
@@ -194,7 +204,7 @@ logic [15:0] mul1_res;
 fp_mul#(.CLAMP(0)) mul1(.a_i(rs1_real), .b_i(rs2_real), .result_o(mul1_res));
 // More multipliers here
 
-// Multpliers for complex absolute value;
+// Multpliers for complex absolute value
 logic [15:0] real_sq_res;
 fp_mul#(.CLAMP(1)) real_sq(.a_i(rs1_real), .b_i(rs1_real), .result_o(real_sq_res));
 
@@ -217,8 +227,7 @@ end
 ```
 
 The `fp_mul` module can be found in the supplementary material that accompanies this lab.
-Copy the `fp_mul.sv` file to `vendor/lowrisc_ibex/rtl` in the  demo system repository.
-Add it to the file list in `vendor/lowrisc_ibex/ibex_core.core` (add to the list containing the Ibex RTL files).
+Copy the `fp_mul.sv` file to `vendor/lowrisc_ibex/rtl` in the demo system repository and add it to the list of Ibex RTL files in `vendor/lowrisc_ibex/ibex_core.core`.
 
 Finally you will need to modify the ALU output mux to produce the result of the complex operation when one of the complex operands is selected.
 

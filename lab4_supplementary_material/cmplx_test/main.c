@@ -10,7 +10,7 @@
 
 typedef uint32_t cmplx_packed_t;
 
-inline cmplx_packed_t cmplx_mul_insn(uint32_t a, uint32_t b) {
+static inline cmplx_packed_t cmplx_mul_insn(uint32_t a, uint32_t b) {
   uint32_t result;
 
   asm (".insn r CUSTOM_0, 0, 0, %0, %1, %2" :
@@ -20,7 +20,7 @@ inline cmplx_packed_t cmplx_mul_insn(uint32_t a, uint32_t b) {
   return result;
 }
 
-inline cmplx_packed_t cmplx_add_insn(uint32_t a, uint32_t b) {
+static inline cmplx_packed_t cmplx_add_insn(uint32_t a, uint32_t b) {
   uint32_t result;
 
   asm (".insn r CUSTOM_0, 1, 0, %0, %1, %2" :
@@ -30,7 +30,7 @@ inline cmplx_packed_t cmplx_add_insn(uint32_t a, uint32_t b) {
   return result;
 }
 
-inline int32_t cmplx_abs_sq_insn(uint32_t a) {
+static inline int32_t cmplx_abs_sq_insn(uint32_t a) {
   int32_t result;
 
   asm (".insn r CUSTOM_0, 2, 0, %0, %1, x0" :

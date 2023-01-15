@@ -128,7 +128,7 @@ Handling for `OPCODE_CMPLX` needs to be added to both decoders:
    We must set the following signals:
   - `alu_op_a_mux_sel_o`: Mux select for ALU operand A, always set to `OP_A_REG_A` as we always read our operands from registers for our new instructions.
   - `alu_op_b_mux_sel_o`: Mux select for ALU operand B, always set to `OP_B_REG_B` as we always read our operands from registers for our new instructions.
-  - `alu_operation_o`: The ALU operation, set it to one of the new values you created in `ibex_pkg.sv` depending upon the *funct3* field of the instruction.
+  - `alu_operator_o`: The ALU operation, set it to one of the new values you created in `ibex_pkg.sv` depending upon the *funct3* field of the instruction.
 
 ### Modifying `ibex_alu.sv`
 
@@ -200,20 +200,22 @@ assign rs2_imag = operand_b_i[15:0];
 
 logic [15:0] mul1_res;
 
-// Multiplier for complex multiplication
+// Multipliers for complex multiplication
 fp_mul#(.CLAMP(0)) mul1(.a_i(rs1_real), .b_i(rs2_real), .result_o(mul1_res));
-// More multipliers here
+// TODO: Add more multipliers here
+
+logic [15:0] real_sq_res;
 
 // Multpliers for complex absolute value
-logic [15:0] real_sq_res;
 fp_mul#(.CLAMP(1)) real_sq(.a_i(rs1_real), .b_i(rs1_real), .result_o(real_sq_res));
+// TODO: Add another multiplier here
 
 logic [31:0] cmplx_result;
 
 always_comb begin
   cmplx_result = '0;
 
-  case (operator_i)
+  unique case (operator_i)
     ALU_CMPLX_MUL: begin
       // Implement this write result to `cmplx_result`
     end
@@ -223,23 +225,25 @@ always_comb begin
     ALU_CMPLX_ABS_SQ: begin
       // Implement this write result to `cmplx_result`
     end
+    default: ;
+  endcase
 end
 ```
 
 The `fp_mul` module can be found in the supplementary material that accompanies this lab.
 Copy the `fp_mul.sv` file to `vendor/lowrisc_ibex/rtl` in the demo system repository and add it to the list of Ibex RTL files in `vendor/lowrisc_ibex/ibex_core.core`.
 
-Finally you will need to modify the ALU output mux to produce the result of the complex operation when one of the complex operands is selected.
+Finally you will need to modify the ALU result mux to produce the result of the complex operation when one of the complex operands is selected.
 
 ## Testing our implementation
 
 With our new instructions implemented, how do we test them?
 We could just switch out the functions that do complex number manipulation in our Mandelbrot demo to use our new instructions, but if it doesn't work first time, it'll be hard to debug.
 So instead we'll use a dedicated program to test the instructions against existing software implementations.
-You can find this in the `lab4_material\cmplx_test` directory.
+You can find this in the `lab4_supplementary_material/cmplx_test` directory.
 Follow these steps to build it: 
 
-1. Copy its contents into `sw/demo/cmplx_test` in the demo system repository
+1. Copy the `cmplx_test` directory into the `sw/demo/` directory in the demo system repository
 2. Add `add_subdirectory(cmplx_test)` on its own line in `sw/demo/CMakeLists.txt`
 3. Switch to the `sw/build` directory (or whatever build directory you chose to use) and run `cmake ../ -DSIM_CTRL_OUTPUT=On`
 4. Build the software with `make`
@@ -249,7 +253,7 @@ This redirects output from the UART to the simulator control which writes them t
 With this enabled you can see output from the program (in particular the test results) when running it through Verilator.
 Note that you need to rerun the `cmake` command with that option set to `Off` and rebuild the software to use it on FPGA.
 
-Build a demo system simulation binary as you learnt in Lab 2 and run the `cmplx_test` binary (path `sw/build/demos/cmplx_test/cmplx_test`).
+Run the `cmplx_test` binary you just built (path `sw/build/demo/cmplx_test/cmplx_test`).
 Look at the `ibex_demo_system.log` file that will be in the same directory you ran the simulation from.
 If you got your implementation correct, you will see "All tests passed".
 Otherwise a failure will be reported, you will be told what test failed and given the input and output of the software version and what your instruction implementation did, time to open GTKWave and start debugging!
@@ -257,9 +261,10 @@ Otherwise a failure will be reported, you will be told what test failed and give
 ## Implementing Mandelbrot with our custom instructions
 
 Make a copy of the `fractal_fixed.c` file in `sw/demo/lcd_st7735`, e.g. calling it `fractal_cmplx_insn.c`.
-Modify `mandel_cmplx_insn.c` to use the new custom instructions.
-You can find functions that use the custom instructions in `cmplx_test`.
-We suggest just copying these functions into your `mandel_cmplx_insn.c` and using those rather than taking the inline assembly within them and using that directly.
+Modify `fractal_cmplx_insn.c` to use the new custom instructions.
+You can find functions that use the custom instructions in `cmplx_test/main.c`.
+We suggest just copying these functions into your `fractal_cmplx_insn.c` and using those rather than taking the inline assembly within them and using that directly.
+Don't forget to add `fractal_cmplx_insn.c` to the list of source files for `lcd_st7735` in `sw/demo/lcd_st7735/CMakeLists.txt`.
 
 A few modifications will be needed to switch to using the custom instructions:
 

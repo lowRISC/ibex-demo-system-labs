@@ -50,21 +50,21 @@ We finally colour the result based upon the number of iterations we reached befo
 
 ## Complex number custom instructions
 
-Note: These are toy instructions for demonstration use, a 'real' complex number extension may do things differently, in particular the clamping and truncation behaviour discussed below.
+Note: These instructions are tailored to this lab, and a 'real' complex number extension may do things differently, in particular the clamping and truncation behaviour discussed below.
 
 Our fixed point implementation of the Mandelbrot set renderer uses 16-bit numbers (12 fractional bits, 4 integer bits with 2s complement representation).
 This means we can pack a complex number into a single 32-bit number.
-The imaginary part will be placed in the lower bits 15:0 and the real part in upper bits 31:16.
+The imaginary part will be placed in the lower bits (indexed `[15:0]` and the real part in upper bits (`[31:16]`).
 So how about some custom instructions that implement complex number operations on the packed 32 bit representation?
 
 We are going to want three new instructions:
 
-* complex multiply
-* complex add
+* complex multiplication
+* complex addition
 * complex absolute value (squared)
 
 These will fit into the same instruction type used by the the ALU operations (add, sub, xor etc).
-All three have one destination register, multiply and add have two source registers where absolute value only has one.
+All three have one destination register, multiplication and addition have two source registers whereas absolute value only has one.
 
 ### RISC-V instruction encoding
 
@@ -83,8 +83,8 @@ All of our instructions will be *R-type* instructions, which have the following 
 The R-type instructions provide two source registers and one destination register.
 We'll use the *funct3* field to select which of our operations to execute:
 
-- `3'b000` - Complex Multiply
-- `3'b001` - Complex Add
+- `3'b000` - Complex Multiplication
+- `3'b001` - Complex Addition
 - `3'b010` - Complex Absolute Value (Squared)
 
 *funct7* will be set to 0 in all cases.

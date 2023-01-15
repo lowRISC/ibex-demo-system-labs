@@ -149,6 +149,6 @@ We recommend doing this in two steps:
 
 When you are done, rebuild the Verilator simulation executable.
 
-To enable this feature in the `demo` program, change the `0` in `#define USE_GPIO_SHIFT_REG 0` near the top of `sw/demo/main.c` to `1` and recompile the `demo` binary.
+To enable this feature in the `demo` program, change the `0` in `#define USE_GPIO_SHIFT_REG 0` near the top of `sw/demo/hello_world/main.c` to `1` and recompile the `demo` binary.
 
 Rerun the simulation, reload the wave traces (clicking the circular arrow button in the toolbar or **File** -> **Reload Waveform**), and add the relevant waves to check that your GPIO shift register works as expected.

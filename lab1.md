@@ -1,6 +1,7 @@
 # Lab 1: Programming your FPGA and interacting with the demo system
 
 Welcome to the first lab on using the [Ibex demo system](https://github.com/lowRISC/ibex-demo-system). In this lab, we will:
+
 - Set up your development environment.
 - Learn how to build the software.
 - Build an FPGA bitstream. 
@@ -204,6 +205,7 @@ Inside GDB type the following command:
 ```
 
 Some useful GDB commands:
+
 - `step`: steps to the next instruction.
 - `advance main`: keep running until the start of the main function (you can replace main with another function).
 - `set {int}0xhex_addr = 0xhex_val`: write `hex_val` to the memory address `hex_addr`.

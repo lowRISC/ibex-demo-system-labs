@@ -156,7 +156,7 @@ $$xF yF = xyF^2$$
 
 so we need to divide by $F$ to get the $xyF$ result we want.
 
-As the constant $F$ is a power-of-two, the division in practice is just choosing which bits out of your multiplier are fed into the final result.
+As the constant $F$ is a power of two, the division in practice is just choosing which bits out of your multiplier are fed into the final result.
 
 #### Clamping/Truncation
 
@@ -200,7 +200,7 @@ assign rs2_imag = operand_b_i[15:0];
 
 logic [15:0] mul1_res;
 
-// Multiplier for complex multiply
+// Multiplier for complex multiplication
 fp_mul#(.CLAMP(0)) mul1(.a_i(rs1_real), .b_i(rs2_real), .result_o(mul1_res));
 // More multipliers here
 
@@ -233,24 +233,26 @@ Finally you will need to modify the ALU output mux to produce the result of the 
 
 ## Testing our implementation
 
-With our new instructions implemented how do we test them?
-We could just switch out the functions that do complex number manipulation in our Mandelbrot demo to use our new instructions but if it doesn't work first time it'll be hard to debug.
+With our new instructions implemented, how do we test them?
+We could just switch out the functions that do complex number manipulation in our Mandelbrot demo to use our new instructions, but if it doesn't work first time, it'll be hard to debug.
 So instead we'll use a dedicated program to test the instructions against existing software implementations.
-You can find this in the `lab4_material\cmplx_test` directory, follow these steps to build it: 
- * Copy its contents into `sw/demo/cmplx_test` in the demo system repository
- * Add 'add_subdirectory(cmplx_test)' on its own line in sw/demo/CMakeLists.txt
- * Switch to the 'sw/build' directory (or whatever build directory you chose to use) and run 'cmake ../ -DSIM_CTRL_OUTPUT=On'
- * Build the software with 'make'
+You can find this in the `lab4_material\cmplx_test` directory.
+Follow these steps to build it: 
+
+1. Copy its contents into `sw/demo/cmplx_test` in the demo system repository
+2. Add `add_subdirectory(cmplx_test)` on its own line in `sw/demo/CMakeLists.txt`
+3. Switch to the `sw/build` directory (or whatever build directory you chose to use) and run `cmake ../ -DSIM_CTRL_OUTPUT=On`
+4. Build the software with `make`
 
 Note the `-DSIM_CTRL_OUTPUT=On`.
 This redirects output from the UART to the simulator control which writes them to a log file.
-With this enabled you can see output from the program (in particular the test results) when running it through verilator.
-Note that you need to rerun the `cmake` command with that option set to 'Off' and rebuild the software to use it on FPGA.
+With this enabled you can see output from the program (in particular the test results) when running it through Verilator.
+Note that you need to rerun the `cmake` command with that option set to `Off` and rebuild the software to use it on FPGA.
 
-Build a demo system simulation binary as you learnt in lab2 and run the 'cmplx_test' binary (path sw/build/demos/cmplx_test/cmplx_test).
-Look at the 'ibex_demo_system.log' file that will be in the same directory you ran the simulation from.
-If you got your implementation correct you will see 'All tests passed'.
-Otherwise a failure will be reported, you will be told what test failed and given the input and output of the software version and what your instruction implementation did, time to break out GTKWave and start debugging!
+Build a demo system simulation binary as you learnt in Lab 2 and run the `cmplx_test` binary (path `sw/build/demos/cmplx_test/cmplx_test`).
+Look at the `ibex_demo_system.log` file that will be in the same directory you ran the simulation from.
+If you got your implementation correct, you will see "All tests passed".
+Otherwise a failure will be reported, you will be told what test failed and given the input and output of the software version and what your instruction implementation did, time to open GTKWave and start debugging!
 
 ## Implementing Mandelbrot with our custom instructions
 
@@ -258,19 +260,22 @@ Make a copy of the `fractal_fixed.c` file in `sw/demo/lcd_st7735`, e.g. calling 
 Modify `mandel_cmplx_insn.c` to use the new custom instructions.
 You can find functions that use the custom instructions in `cmplx_test`.
 We suggest just copying these functions into your `mandel_cmplx_insn.c` and using those rather than taking the inline assembly within them and using that directly.
-A modifications will be needed to switch to using the custom instructions:
+
+A few modifications will be needed to switch to using the custom instructions:
+
  * Remove all the fixed point and complex number functions (though you'll want to keep the macros)
  * Write a function that can take a `cmplx_fixed_t` and pack it into a 32-bit integer for use with the custom instructions.
  * Alter `mandel_iters_fixed` to use the complex number instructions.
  * Rename `mandel_iters_fixed` e.g. to `mandel_iters_cmplx_insn`
  * Update `fractal_mandelbot_fixed` similarly.
- * Call your new mandelbrot function from `main.c` as part of the fractal drawing, giving a final result that first uses the floating point implementation, then uses the fixed point then finally the custom instructions
+ * Call your new mandelbrot function from `main.c` as part of the fractal drawing, giving a final result that first uses the floating point implementation, then the fixed point implementation, and finally the implementation with instructions.
 
 ## Further Exercises / Questions
 
  1. Our new instructions add several new multipliers to Ibex, can we reduce this by sharing them?
-    Can we share with the existing multipliers (it currently has 3 16x16 ones to implement the single-cycle multiply)?
+    Can we share with the existing multipliers (it currently has 3 16x16 ones to implement the single-cycle multiplication)?
     Is there any point in doing this on an FPGA where DSPs are fixed function so our multiplier usage isn't consuming general logic?
     Would it be more worthwhile on ASIC?
- 2. Our use of a major opcode for our custom instructions is simple but very wasteful of encoding space, could we use an existing major opcode (e.g. `OPCODE_OP` which the bitmanip extension uses along with the base RV32I instructions)?
+ 2. Our use of a major opcode for our custom instructions is simple but very wasteful of encoding space.
+    Could we use an existing major opcode (e.g. `OPCODE_OP` which the bitmanip extension uses along with the base RV32I instructions)?
  3. What other kinds of clamping/truncating behaviour would make sense for our complex number implementation?

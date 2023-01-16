@@ -179,7 +179,8 @@ util/load_demo_system.sh halt ./sw/build/demo/hello_world/demo
 
 In a separate terminal window, you can connect GDB to the OpenOCD server:
 ```bash
-riscv32-unknown-elf-gdb -ex "target extended-remote localhost:3333" ./sw/build/demo/hello_world/demo
+riscv32-unknown-elf-gdb -ex "target extended-remote localhost:3333" \
+    ./sw/build/demo/hello_world/demo
 ```
 
 Some useful GDB commands:

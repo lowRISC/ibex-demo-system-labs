@@ -58,12 +58,12 @@ Alternatively, you can implement the drawing function for a shape of your own ch
 Create the function in `sw/demo/lcd_st7735/main.c`, and don't forget the local function declaration if needed.
 <!-- Sample solution on the `sample-solution/lab3` branch. -->
 
-When you are done, you can see your implementation in action on the LCD by adding a third item to the menu `items[]` array, e.g., `"3. Cross"` and then changing the reaction to a press of Button 3 to the following:
+When you are done, you can see your implementation in action on the LCD by changing the action of the second menu item (i.e., the reaction to the press of button 1 in the menu) to
 ```c
-case BTN3:
-  lcd_st7735_clean(&lcd);
-  lcd_st7735_draw_cross(&lcd, (LCD_Point){.x = 20, .y = 30}, 10, BGRColorRed);
-break;
+case BTN1:
+  lcd_st7735_draw_cross(&lcd, (LCD_Point){.x = 80, .y = 80}, 10, BGRColorRed);
+  timer_delay(1000);
+  break;
 ```
 Recompile the program, and execute it on the FPGA. Check that the shape drawn is what you expected!
 

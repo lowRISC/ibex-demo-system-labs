@@ -97,7 +97,7 @@ unsigned int compute_cycles;
 fractal_mandelbrot_float(lcd, &compute_cycles);
 char buf[32];
 snprintf(buf, 32, "cycles: %10d", compute_cycles);
-lcd_st7735_puts(lcd, (LCD_Point){.x = 0, .y = 0}, buf);
+lcd_st7735_puts(lcd, (LCD_Point){.x = 0, .y = 112}, buf);
 timer_delay(5000);
 ```
 7. Add `#include <stdio.h>` near the top of `sw/demo/lcd_st7735/main.c`.

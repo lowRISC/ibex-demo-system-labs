@@ -164,9 +164,7 @@ You must repeat the export path step if you open a new terminal window.
 
 Then you can load and run the program as follows:
 ```bash
-cd util
-./load_demo_system.sh run ./sw/build/demo/hello_world/demo
-cd ..
+util/load_demo_system.sh run ./sw/build/demo/hello_world/demo
 ```
 
 Congratulations! You should now see the green LEDs zipping through and the RGB LEDs dimming up and down with different colors each time.
@@ -189,9 +187,7 @@ We can use OpenOCD to connect to the JTAG on the FPGA. We can then use GDB to co
 
 First, let's load the software in the halted state:
 ```bash
-cd util
-./load_demo_system.sh halt ./sw/build/demo/hello_world/demo
-cd ..
+util/load_demo_system.sh halt ./sw/build/demo/hello_world/demo
 ```
 
 In a separate terminal window, you can connect GDB to the OpenOCD server:

@@ -4,7 +4,6 @@ Welcome to the first lab on using the [Ibex demo system](https://github.com/lowR
 
 - Set up your development environment.
 - Learn how to build the software.
-- Build an FPGA bitstream. 
 - Program our board with a bitstream.
 - Run the software on the board.
 - Read from the UART.
@@ -110,36 +109,37 @@ popd ../..
 This builds the software that we can later use as memory content for the Ibex running in the demo system. For example, the binary for the demo application is located at `sw/build/demo/hello_world/demo`.
 
 ## Getting the FPGA bitstream
-Get the FPGA bitstream off of the USB or download the [FPGA bitstream from GitHub](https://github.com/lowRISC/ibex-demo-system/releases/download/v0.0.2/lowrisc_ibex_demo_system_0.bit).
+Get the FPGA bitstream off of the USB or download the [FPGA bitstream from GitHub](https://github.com/lowRISC/ibex-demo-system/releases/download/v0.0.2/lowrisc_ibex_demo_system_0.bit). Put the bitstream at the root of your demo system repository.
 
 Alternatively, you can build your own bitstream if you have access to Vivado by following the instructions in [the README](https://github.com/lowRISC/ibex-demo-system/blob/main/README.md).
 
 ## Programming the FPGA
-First get the openFPGA executable off of the USB or build it from scratch using the instructions taken from [the official guide](https://trabucayre.github.io/openFPGALoader/guide/install.html):
+Before we can program the FPGA, we need to make it accessible from inside to the container.
+First, lets find out which bus and device our Arty is on:
 ```bash
-git clone https://github.com/trabucayre/openFPGALoader.git
-cd openFPGALoader
-mkdir build
-cd build
-cmake ..
-cmake --build .
-cd ../..
+$ lsusb
+...
+Bus 00X Device 00Y: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
+...
+```
+Where X and Y are numbers. Please note down what X and Y is for you (this will change if you unplug and replug your FPGA).
+
+Then exit your docker and run it with the following parameters (assuming your running Linux):
+```bash
+sudo docker run -it --rm \
+  -p 6080:6080 \
+  -p 3333:3333 \
+  -v $(pwd):/home/dev/demo:Z \
+  --privileged \
+  --device=/dev/bus/usb/00X/00Y \
+  --device=/dev/ttyUSB1 \
+  ibex
 ```
 
-For openFPGALoader to be able to access the FPGA through the USB, we must follow the following commands:
+Then inside the container at [localhost:6080/vnc.html](http://localhost:6080/vnc.html), we program the FPGA with the following terminal command:
 ```bash
-sudo cp openFPGALoader/99-openfpgaloader.rules /etc/udev/rules.d/
-# Force udev to take new rule.
-sudo udevadm control --reload-rules && sudo udevadm trigger
-# Add user to plugdev group.
-sudo usermod -a $USER -G plugdev
-
-```
-
-Then we program the FPGA with the following command:
-```bash
-openFPGALoader/build/openFPGALoader -b arty_a7_35t \
-    <path-to>/lowrisc_ibex_demo_system.bit
+openFPGALoader -b arty_a7_35t \
+    /home/dev/demo/lowrisc_ibex_demo_system_0.bit
 ```
 
 ## Loading the software
@@ -147,20 +147,7 @@ Before we load the software, please check that you have OpenOCD installed:
 ```bash
 openocd --version
 ```
-Please also check that you have version 0.11.0 or above.
-
-If not, you can get the correct version off of the USB stick or build your own OpenOCD:
-```bash
-git clone https://github.com/openocd-org/openocd.git
-cd openocd
-git checkout v0.11.0
-./bootstrap
-./configure
-make
-cd ..
-export PATH=$PWD/openocd/src:$PATH
-```
-You must repeat the export path step if you open a new terminal window.
+Please also check that you have version 0.11.0.
 
 Then you can load and run the program as follows:
 ```bash
@@ -192,12 +179,7 @@ util/load_demo_system.sh halt ./sw/build/demo/hello_world/demo
 
 In a separate terminal window, you can connect GDB to the OpenOCD server:
 ```bash
-riscv32-unknown-elf-gdb ./sw/build/demo/hello_world/demo
-```
-
-Inside GDB type the following command:
-```
-(gdb) target extended-remote localhost:3333
+riscv32-unknown-elf-gdb -ex "target extended-remote localhost:3333" ./sw/build/demo/hello_world/demo
 ```
 
 Some useful GDB commands:

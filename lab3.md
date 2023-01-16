@@ -56,7 +56,7 @@ Alternatively, you can implement the drawing function for a shape of your own ch
 When you are done, you can see your implementation in action on the LCD by changing the action of the second menu item (i.e., the reaction to the press of button 1 in the menu) to
 ```c
 case BTN1:
-  lcd_st7735_draw_cross(&lcd, (LCD_Point){.x = 20, .y = 30}, 10, BGRColorRed);
+  lcd_st7735_draw_cross(&lcd, (LCD_Point){.x = 80, .y = 80}, 10, BGRColorRed);
   timer_delay(1000);
   break;
 ```

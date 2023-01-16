@@ -1,30 +1,30 @@
 # Lab 4: Adding Custom Instructions to Ibex
 
 In Lab 3 we saw the difference in performance between the fixed and floating point Mandelbrot implementations, can we get further performance improvements?
-We can add custom RISC-V instructions to use dedicated hardware for computing the Mandelbrot set.
-This lab covers the process of adding such custom instructions, though before we look at how we add them, let's take a quick look at how you calculate a Mandelbrot set.
+By adding custom RISC-V instructions, we can create dedicated hardware for computing the Mandelbrot set even more efficiently.
+This lab covers the process of adding such custom instructions, though before we discuss how to do that, let's first take a quick look at how you calculate a Mandelbrot set.
 
 ## Drawing the Mandelbrot set
 
-This is not a mathematics lab, so we're not going into lots of detail here nor does it matter if you don't really understand it, it's just the 'nuts and bolts' of the calculation you need to work with.
+This is not a mathematics lab, so we're not going into lots of detail here nor does it matter if you don't really understand it. We're just going to cover the 'nuts and bolts' of the calculation you need to work with, the lowest-level math operations that dominate the runtime of the algorithm.
 Before we can draw the Mandelbrot set, we first need to be able to work with complex numbers.
 
 ### Complex Number Intro
 
-A complex number can be written as $a + bi$, where $a$ and $b$ are real numbers and $i = \sqrt{-1}$ is the *imaginary unit*.
+A complex number can be written as $a + bi$, where $a$ and $b$ are real numbers and $i = \sqrt{-1}$ is the *imaginary unit*. (We call it imaginary because there is no physical way to visualize what $\sqrt{-1}$ is!)
 $a$ is called the *real part*, and $b$ is called the *imaginary part*.
 
 To add complex numbers, simply sum the real and imaginary parts:
 
 $$(a + bi) + (c + di) = (a + c) + (b + d)i$$
 
-To mutiply complex numbers, the components are multiplied by standard algebraic rules:
+To mutiply complex numbers, the components are multiplied by standard algebraic rules (where multiplication distributes over addition):
 
 $$(a + bi) (c + di) = ac + adi + bci + bdi^2 = (ac - bd) + (ad + bc)i$$
 
-Noting that $i^2 = -1$.
+Noting that $i^2 = (\sqrt{-1})^2 = -1$.
 
-Finally, the absolute value $|C|$ of a complex number $C = a + bi$ is defined as:
+Finally, the absolute value $|C|$ of a complex number $C = a + bi$ (you can also think this as the magnitude of a 2D vector in the real and imaginary axis) is defined as:
 
 $$|C|^2 = a^2 + b^2$$
 
@@ -33,7 +33,7 @@ Noting we would need a square root to get the absolute value, but for our purpos
 ### Mandelbrot Set Calculation
 
 The Mandelbrot set is a set of complex numbers.
-A number $C$ is in the set if the recurrance below never diverges to infinity (i.e., $|Z_n|$ is a finite number for all $n$).
+A number $C$ is in the set if the recurrance relationship below never diverges to infinity (i.e., $|Z_n|$ is a finite number for all $n$).
 
 $$Z_0 = C$$
 
@@ -66,14 +66,14 @@ We are going to want three new instructions:
 These will fit into the same instruction type used by the the ALU operations (add, sub, xor etc).
 All three have one destination register, multiplication and addition have two source registers whereas absolute value only has one.
 
-### RISC-V instruction encoding
+### Choosing a RISC-V instruction encoding
 
-We won't be getting into full encoding details in this lab (please consult the RISC-V ISA manual volume 1 if you want more details), just the ones we need.
-The bottom 7 bits of a RISC-V instruction specify the 'major opcode' (in this table, the bottom two bits are fixed to `2'b11`):
+We won't be getting into full encoding details in this lab, but just covering the ones we need (please consult the RISC-V ISA manual volume 1 if you want more details).
+The bottom 7 bits of a RISC-V instruction specify the 'major opcode' (in this table, the bottom two bits are always `2'b11`, so the table only shows bits 2:6):
 
 ![](./lab4_imgs/RISC-V_base_opcode_map.png)
 
-RISC-V reserves some major opcodes for custom instructions, we're going to use the *custom-0* opcode, which has a value of `7'b0001011 = 7'h0b`.
+RISC-V reserves some major opcodes for custom instructions; we're going to use the *custom-0* opcode which has a value of `7'b0001011 = 7'h0b`.
 Let's call it `OPCODE_CMPLX`.
 
 All of our instructions will be *R-type* instructions, which have the following layout:
@@ -92,8 +92,7 @@ For the absolute value operation, the *rs2* source register will always be `x0` 
 
 ## Adding custom instructions to Ibex
 
-In a sense Ibex has no direct custom instruction support, however one can easily alter the RTL to add some.
-There are three files in which we need to make modifications.
+Ibex has no explicit custom instruction support, however one can easily alter the RTL to add some. There are three source files in which we will need to make modifications.
 
 - `ibex_pkg.sv`: Constants and definitions
 - `ibex_decoder.sv`: Instruction decoder
@@ -101,7 +100,7 @@ There are three files in which we need to make modifications.
 
 ### Modifying `ibex_pkg.sv`
 
-Open `vendor/lowrisc_ibex/rtl/ibex_pkg.sv`, take a look, and make the following changes:
+Open the file `vendor/lowrisc_ibex/rtl/ibex_pkg.sv`, and make the following changes:
 
 1. Add our new opcode (`OPCODE_CMPLX = 7'h0b`) to the opcode enum `opcode_e`.
 2. Add three new operations, one for each new instruction, to the ALU operations enum `alu_op_e`.
@@ -111,13 +110,11 @@ Open `vendor/lowrisc_ibex/rtl/ibex_pkg.sv`, take a look, and make the following 
 ### Modifying `ibex_decoder.sv`
 
 Open `vendor/lowrisc_ibex/rtl/ibex_decoder.sv` and take a look.
-The first thing to note is the decoder is split into two, one part specifies things like register read and write enables, and the other part specifies ALU related signals.
-The reason for this split is timing, the decoder has two copies of the instruction in seperate flops.
-With a single set of flops the 'fan-out' of those flops is very large, requiring significant buffering, slowing the logic down.
-With the duplicate flops and split, the decoder fan-out is reduced, which improves performance.
-Tools can do this kind of duplication automatically, but it may not be enabled in all flows (in particular in ASIC synthesis), and tools may choose a split that doesn't work as well.
+The first thing to note is the decoder is split into two. One part specifies things like register read and write enables, and the other part specifies ALU related signals.
+The decoder also has two copies of the instruction in seperate flops, which allows us to meet the timing constraints more easily. With a single set of flops, the 'fan-out' of those flops becomes very large and requires significant buffering (drive-strength), slowing the logic down. With the duplicate flops and split, the decoder fan-out is reduced, which improves performance.
+Tools can do this kind of duplication automatically, but it may not be enabled in all flows (in particular in ASIC synthesis), and tools may choose a split that doesn't work as well. Hence we explicity split the logic ourselves to guarantee the behaviour we want.
 
-Handling for `OPCODE_CMPLX` needs to be added to both decoders:
+Support for our custom opcode `OPCODE_CMPLX` needs to be added to both decoders:
 
 1. The first decoder begins with `unique case (opcode)`.
    For `OPCODE_CMPLX` we must set the following signals:
@@ -132,56 +129,52 @@ Handling for `OPCODE_CMPLX` needs to be added to both decoders:
 
 ### Modifying `ibex_alu.sv`
 
-Open `vendor/lowrisc_ibex/rtl/ibex_alu.sv` and take a look.
+Finally open the file `vendor/lowrisc_ibex/rtl/ibex_alu.sv` and take a look.
 The ALU takes in two operands (inputs `operand_a_i` and `operand_b_i`) along with an operator (input `operator_i`) to produce a result (output `result_o`).
-There's multiple parts to the ALU as there are various kinds of operations (the bit-manipulation extension adds significant complexity here).
-At the bottom of the file you'll find the result multiplexer (mux), outputting the result from the appropriate part of the ALU based upon the operator.
+There are multiple parts to the ALU to handle different kinds of operations (the bit-manipulation extension for example adds significant complexity here).
+At the bottom of the file you will find the result multiplexer (mux), which outputs the result from the appropriate part of the ALU based upon the operator.
 
-We need to add new logic to implement our fixed point operations, but first let's look at fixed point representation and clamping/truncating behaviour.
+We need to add new logic to implement our complex fixed point operations, but first let's look at fixed point representation and clamping/truncating behaviour.
 
 #### Fixed point representation
 
-In fixed point representation we simply store the number multiplied by some constant, which is a power of two.
-For the representation we're using, that multiplier is 4096, so 1.0 would be represented by 4096, 2.0 by 8192, and 1.5 by 6144.
+Fixed point representation simply stores and operates on a scaled version of the true value. The true number is always multiplied by some constant, which is a power of two, so we can recover it by applying the reverse, a division by the constant. For the representation we're using, we choose that multiplier to be 4096 or $2^12$, so 1.0 would be represented by 4096, 2.0 by 8192, and 1.5 by 6144. This may seem slightly odd, but it allows us to make use of common ALU hardware extremely efficiently.
 
-Manipulating fixed point numbers is straightforward:
-For addition and subtraction simply perform the operations as normal
+Manipulating fixed point numbers is as straightforward as integers:
+For addition and subtraction simply perform the operations as normal:
 
 $$xF + yF = (x + y)F$$
 
 where $F$ is our fixed multiplier 4096.
-For multiplication first multiply then divide by the fixed constant
+For multiplication first multiply, then divide by the fixed constant:
 
 $$xF yF = xyF^2$$
 
-so we need to divide by $F$ to get the $xyF$ result we want.
+...so we need to divide by $F$ to get the $xyF$ result we want.
 
-As the constant $F$ is a power of two, the division in practice is just choosing which bits out of your multiplier are fed into the final result.
+As the constant $F$ is a power of two, the division is a bitshift, or in practice is just choosing which bits out of your multiplier are fed into the final result.
 
 #### Clamping/Truncation
 
-We have an issue with multiplication, and to a lesser extent addition.
+Before we continue, there is an important issue with multiplication, and to a lesser extent addition.
 Multiplying two 16-bit numbers can give you a 32-bit result (consider `0xffff` multiplied by `0xffff`).
-We're dropping the bottom 12 bits of this to give us our constant divide, but that still leaves us with 20 bits of result and only 16 bits to place it in.
+We drop the bottom 12 bits of this result to give us our constant divide, but that still leaves us with 20 bits of result and only 16 bits to place it in.
 There are two options:
 
  * Truncation: drop the top four bits;
  * Clamping: clamp the result to the maximum or minimum value as appropriate.
 
-For complex multiplication we'll use truncation, for the following two main reasons:
-First, neither truncation nor clamping produce sensible overall results.
-The result of complex multiplication is the sum of multiple real multiplications, so clamping individual multiplications does not necessarily result in a sensible result overall (e.g., they could have different signs and cancel each other out).
-Truncation also produces a non-sensical overall result, but it's cheaper to implement and matches what normal multiplications do (e.g., in C if we do a 32-bit multiplication, we get a truncated 32-bit result).
-Second, we make the application responsible for ensuring that any multiplications remain within range (which is the case for our Mandelbrot set application).
+For complex multiplication we'll use truncation, for two main reasons:
+Firstly, neither truncation nor clamping produce sensible overall results. The result of complex multiplication is the sum of multiple real multiplications, so clamping individual multiplications does not necessarily result in a sensible result overall (e.g., they could have different signs and cancel each other out). Truncation also produces a non-sensical overall result, but it's cheaper to implement and matches what normal multiplications do (e.g., in C if we do a 32-bit multiplication, we get a truncated 32-bit result).
+Secondly, we can just move the responsibility for providing sane inputs to the application, by ensuring that any multiplications remain within range (which is the case for our Mandelbrot set application).
 
 For the complex absolute value we'll use clamping, again for two main reasons:
-First, squaring means no negative results, so clamping is sensible.
-If one of the multiplications maxes out, we'll get a large result back because the other multiplication can't produce some large negative that could cancel it out.
-Second, our Mandelbrot set application uses the absolute value to break multiplication iterations when exceeding a threshold, thereby keeping multiplications within range.
+Firstly, squaring means no negative results, so clamping is sensible. If one of the multiplications maxes out, we'll get a large result back because the other multiplication can't produce some large negative that could cancel it out.
+Secondly, our Mandelbrot set application uses the absolute value to break multiplication iterations when exceeding a threshold, thereby keeping multiplications within range.
 This would not be possible if we used truncation in calculating the absolute value.
 
 Addition suffers from the same issue in that an extra bit (representing the carry-out) is added, so our 16-bit adds have 17 bits of result.
-For complex additions and for the additions to implement the complex multiplication, we'll use truncation, with the same reasoning as for complex multiplication.
+For complex additions and for the additions to implement the complex multiplication, we will use truncation, with the same reasoning as for complex multiplication.
 For the addition at the end of the complex absolute value, we use the full 17-bit value of the sum and sign-extend it to 32 bits.
 
 #### Implementing the complex operations
@@ -217,13 +210,13 @@ always_comb begin
 
   unique case (operator_i)
     ALU_CMPLX_MUL: begin
-      // Implement this write result to `cmplx_result`
+      // TODO Implement this write result to `cmplx_result`
     end
     ALU_CMPLX_ADD: begin
-      // Implement this write result to `cmplx_result`
+      // TODO Implement this write result to `cmplx_result`
     end
     ALU_CMPLX_ABS_SQ: begin
-      // Implement this write result to `cmplx_result`
+      // TODO Implement this write result to `cmplx_result`
     end
     default: ;
   endcase
@@ -239,9 +232,9 @@ Finally you will need to modify the ALU result mux to produce the result of the 
 
 With our new instructions implemented, how do we test them?
 We could just switch out the functions that do complex number manipulation in our Mandelbrot demo to use our new instructions, but if it doesn't work first time, it'll be hard to debug.
-So instead we'll use a dedicated program to test the instructions against existing software implementations.
+So instead we will use a dedicated program to test the instructions against existing software implementations.
 You can find this in the `lab4_supplementary_material/cmplx_test` directory.
-Follow these steps to build it: 
+Follow these steps to build it:
 
 1. Copy the `cmplx_test` directory into the `sw/demo/` directory in the demo system repository
 2. Add `add_subdirectory(cmplx_test)` on its own line in `sw/demo/CMakeLists.txt`
@@ -256,7 +249,7 @@ Note that you need to rerun the `cmake` command with that option set to `Off` an
 Run the `cmplx_test` binary you just built (path `sw/build/demo/cmplx_test/cmplx_test`).
 Look at the `ibex_demo_system.log` file that will be in the same directory you ran the simulation from.
 If you got your implementation correct, you will see "All tests passed".
-Otherwise a failure will be reported, you will be told what test failed and given the input and output of the software version and what your instruction implementation did, time to open GTKWave and start debugging!
+Otherwise a failure will be reported, and you will be told what test failed and given the input and output of the software version and what your instruction implementation did. It's time to open GTKWave and start debugging!
 
 ## Implementing Mandelbrot with our custom instructions
 

@@ -124,7 +124,7 @@ Bus 00X Device 00Y: ID 0403:6010 Future Technology Devices International, Ltd FT
 ```
 Where X and Y are numbers. Please note down what X and Y is for you (this will change if you unplug and replug your FPGA).
 
-Then exit your docker and run it with the following parameters (assuming your running Linux):
+Then exit your docker and run it with the following parameters (assuming you're running Linux):
 ```bash
 sudo docker run -it --rm \
   -p 6080:6080 \

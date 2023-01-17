@@ -25,7 +25,7 @@ This will create an executable at
 Now start the simulation by invoking that executable with two flags: the first flag enables the capturing of wave traces, and the second flag loads the `demo` binary into program memory
 ```
 ./build/lowrisc_ibex_demo_system_0/sim-verilator/Vibex_demo_system \
-    -t --meminit=ram,$(pwd)/sw/build/demo/demo
+    -t --meminit=ram,$(pwd)/sw/build/demo/hello_world/demo
 ```
 
 The simulation will run until you press `Ctrl+C`.
@@ -82,7 +82,7 @@ What is the address of the first instruction, and what is its returned value?
 When observing instructions in wave traces, it often makes sense to correlate them with the disassembled binary.
 To disassemble the binary, execute
 ```
-riscv32-unknown-elf-objdump -d sw/build/demo/demo
+riscv32-unknown-elf-objdump -d sw/build/demo/hello_world/demo
 ```
 
 Search the output of that command for the instruction address (first column).

@@ -6,4 +6,4 @@ The SoC has been intentionally kept simple, so people new to hardware developmen
 
 [lowRISC](https://lowrisc.org/) is a not-for-profit company with a full stack engineering team based in Cambridge, UK. We use collaborative engineering to develop and maintain open source silicon designs and tools. Ibex development is funded by the OpenTitan project.
 
-This content is copyright lowRISC and licensed under the Creative Commons Attribution 4.0 International Public License, see LICENSE for details.
+This content is copyright lowRISC and licensed under the [Creative Commons Attribution 4.0 International Public License](https://creativecommons.org/licenses/by/4.0/), see LICENSE for details.

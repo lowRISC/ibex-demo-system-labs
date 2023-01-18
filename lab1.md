@@ -194,4 +194,4 @@ Some useful GDB commands:
 - `help`: to find commands you may not yet know.
 
 ### Exercise 3
-Write to the green LEDs using GDB. Look in `sw/common/demo_system.h` for the value of `GPIO_BASE`. Use the set command above to write `0xa0` to this base address. This should change the green LEDs to be on, off, on and off.
+Write to the green LEDs using GDB. Look in `sw/common/demo_system_regs.h` for the value of `GPIO_BASE`. Use the set command above to write `0xa0` to this base address. This should change the green LEDs to be on, off, on and off.

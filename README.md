@@ -1,4 +1,4 @@
-# Lab tutorials for the Ibex demo system
+# Open RISC-V Silicon Development with Ibex
 
 List of labs for the Ibex Demo System:
 - [Lab 1: Programming your FPGA and interacting with the demo system](./lab1.md)

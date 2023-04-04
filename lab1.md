@@ -35,24 +35,30 @@ Accept the terms.
 
 ### Ubuntu
 Make sure you have gnome-terminal installed
-$ sudo apt-get install ./docker-desktop-4.16.0-ubuntu-amd64.deb
-$ systemctl --user enable docker-desktop
+```bash
+sudo apt-get install ./docker-desktop-4.16.0-ubuntu-amd64.deb
+systemctl --user enable docker-desktop
+```
 
 ### Debian
 Make sure you have gnome-terminal installed
-$ sudo apt-get install ./docker-desktop-4.16.0-debian-amd64.deb
-$ systemctl --user enable docker-desktop
+```bash
+sudo apt-get install ./docker-desktop-4.16.0-debian-amd64.deb
+systemctl --user enable docker-desktop
+```
 
 ### Fedora
 Make sure you have gnome-terminal installed
-$ sudo dnf install ./docker-desktop-4.16.0-fedora-x86_64.rpm
-$ systemctl --user start docker-desktop
+```bash
+sudo dnf install ./docker-desktop-4.16.0-fedora-x86_64.rpm
+systemctl --user start docker-desktop
+```
 
 ### Set up container (Linux/Mac)
 There is a prebuilt container of tools available you may want to use to get started quickly.
 There are instructions for building the container for either Docker/Podman located in ./container/README.md.
 
-A container image may be provided to you on a USB stick. You can load the containerfile by running :
+A container image may be provided to you on a USB stick. You can load the container file by running :
 ```bash
 sudo docker load < ibex_demo_image.tar
 # OR
@@ -81,18 +87,18 @@ To access the container once running, go to [http://localhost:6080/vnc.html](htt
 
 ### Set up container (Windows)
 Run a command prompt in administrator mode and type:
-```
+```bash
 cd "C:\Program Files\Docker\Docker"
 .\DockerCli.exe -SwitchLinuxEngine
 ```
 
 Go to the folder on the USB named "Docker Images" and run:
-```
+```bash
 docker load -i ibex_demo_image.tar
 ```
 
 Go to the folder where you have decompressed the demo system repository:
-```
+```bash
 docker run -it --rm -p 6080:6080 -p 3333:3333 -v %cd%:/home/dev/demo:Z ibex
 ```
 
@@ -104,7 +110,7 @@ mkdir -p sw/build
 pushd sw/build
 cmake ..
 make
-popd ../..
+popd
 ```
 
 This builds the software that we can later use as memory content for the Ibex running in the demo system. For example, the binary for the demo application is located at `sw/build/demo/hello_world/demo`.
@@ -117,7 +123,7 @@ Alternatively, you can build your own bitstream if you have access to Vivado by 
 ## Programming the FPGA
 Before we can program the FPGA, we need to make it accessible from inside to the container.
 First, lets find out which bus and device our Arty is on:
-```bash
+```console
 $ lsusb
 ...
 Bus 00X Device 00Y: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC

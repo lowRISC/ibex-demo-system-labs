@@ -112,10 +112,10 @@ What does the basic block containing the instruction do?
 
 Investigating the system memory map, which is defined by the `localparam`s near the top of `rtl/system/ibex_demo_system.sv`, we can see that the address belongs to the on-chip memory.
 Not all data addresses correspond to memory, however.
-The next entry in the address map shows that the GPIO peripheral has a space of 4 KiB starting at `32'h8000_0000` (and thus ending at `32h'8000_0FFF`).
+The next entry in the address map shows that the GPIO peripheral has a space of 4 KiB starting at `32'h8000_0000` (and thus ending at `32'h8000_0FFF`).
 
 We know that the demo program should access the GPIO peripheral, so let's identify that access in the waves.
-For such a task, Verilator has a very useful function that allows searching the waves for values.
+For such a task, GTKWave has a very useful function that allows searching the waves for values.
 Select `data_req_o`, `data_gnt_i`, and `data_addr_o` in the signal wave display, and then click **Search** -> **Pattern Search 1**.
 The window that opens defines matches in two steps: firstly defining the conditions for individual signals, and secondly defining the relation of those conditions.
 We are interested in the case when `data_req_o` and `data_gnt_i` are high and `data_addr_o` has a hexadecimal value of `80000000`.

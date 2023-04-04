@@ -110,7 +110,7 @@ mkdir -p sw/build
 pushd sw/build
 cmake ..
 make
-popd ../..
+popd
 ```
 
 This builds the software that we can later use as memory content for the Ibex running in the demo system. For example, the binary for the demo application is located at `sw/build/demo/hello_world/demo`.
